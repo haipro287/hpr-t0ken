@@ -12,7 +12,6 @@ api.post('/transfer', CheckAccessToken, async (req, res) => {
         const { transferTo, privateKey } = req.body
         const user = await User.findOne({ email: email })
         if (!user) throw new Error('TRANSFER.POST.EMAIL_NOT_FOUND')
-        console.log(user.wallet)
         const isSuccess = await transferMoney(privateKey, transferTo)
         return res.json(isSuccess)
     } catch (err) {
