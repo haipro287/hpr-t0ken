@@ -1,5 +1,6 @@
 import { userContants } from './contants';
 import axios from './axios';
+import { api } from './config';
 
 export const register = (user) => {
     console.log(user)
@@ -140,4 +141,22 @@ export const getProfile = (_id) => {
             console.log(error);
         }
     }
+}
+
+export const transferCoin = (props) => {
+    console.log(props)
+    const t = new Promise((resol, rej) =>{
+        const info = {addressTo:props.address, privateKey:props.privateKey, amount:props.amount}
+        console.log(info)
+        axios.post(`${api}/api/transfer`, info).then((res) =>{
+            if (res.status === 200) {
+                resol( res.data)
+            } else {
+                rej( res.data.errors) 
+            }
+        }).catch(err =>{
+            rej( err) 
+        });
+    })
+    return t;
 }
