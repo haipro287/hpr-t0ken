@@ -10,6 +10,13 @@ const EC = require('elliptic').ec;
 
 const ec = new EC('secp256k1');
 
+
+
+const Hash256 = (password) => hash256
+        .sha256()
+        .update(password)
+        .digest('hex')
+    
 const encryptMD5 = (payload) => {
   const payloadString = JSON.stringify(payload);
   const hashedString = createHash('md5').update(payloadString).digest('hex');
@@ -22,6 +29,14 @@ const EncryptUsingSymmetricKey = (symmetricKey, message) => {
   ).toString();
 
   return encryptedMessage;
+};
+const DecryptUsingSymmetricKey = (symmetricKey, encrypted) => {
+  const message = CryptoJs.AES.decrypt(
+    encrypted,
+    symmetricKey,
+  ).toString();
+
+  return message;
 };
 
 function ConvertBase64ToBuffer(text) {
@@ -114,6 +129,7 @@ module.exports = {
   encryptMD5,
   generateRandomId,
   ComparePassword,
-  HashPassword
-
+  HashPassword,
+  Hash256,
+  DecryptUsingSymmetricKey
 };
