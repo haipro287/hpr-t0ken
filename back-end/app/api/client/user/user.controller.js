@@ -1,12 +1,11 @@
 
-// const { CommonError } = require("../../../utils/error");
-// const { success } = require("../../../utils/response-utils");
+
 const { CheckAccessToken } = require("../../middleware/auth/auth.mid");
 const bcrypt = require('bcrypt')
-// const { update, removeById, getUserById, _update } = require("./user.service");
 const User = require("../../../models/user");
 const { ComparePassword, HashPassword } = require("../../../utils/crypto-utils");
 const { badRequest } = require("../../../utils/response-utils");
+const { createWalletFromPrivateKey } = require("../../../utils/wallet");
 
 const api = require('express').Router()
 
@@ -14,13 +13,17 @@ const api = require('express').Router()
 api.post('/user', async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     try {
-        const { email, password } = req.body
-        const user = await User.findOne({ email })
+        const args = req.body
+        const user = await User.findOne({ email: args.email })
         if (user) return res.json(badRequest("USER.POST.EMAIL_CREATED"))
-        bcrypt.hash(password, salt, async (err, encrypted) => {
+        bcrypt.hash(args.password, salt, async (err, encrypted) => {
             if (err) return res.json(badRequest(err.message))
-
-            const new_user = new User({ email, hashPassword: encrypted })
+            args.hashPassword = encrypted
+            if (args.privateKey) {
+                const wallet = await createWalletFromPrivateKey(args.privateKey, 'temp')
+                args.wallet = wallet.address
+            }
+            const new_user = new User(args)
             const info = await new_user.save()
             res.json(info)
         })
@@ -33,7 +36,6 @@ api.post('/user', async (req, res) => {
 api.get('/user', CheckAccessToken, async (req, res) => {
     try {
         const { userInfo } = req
-        console.log(userInfo)
         const user = await User.findOne({ email: userInfo })
         if (!user) throw new Error('USER.GET.EMAIL_NOT_FOUND')
         res.json(user)
@@ -52,6 +54,7 @@ api.put('/user/:userId', CheckAccessToken, async (req, res) => {
         if (!user || user.email != userInfo) throw new Error('USER.PUT.BAD_REQUEST')
 
         const args = req.body
+        console.log(args)
         const { password, old_password } = args
         if (old_password && password) {
             const isMatch = await ComparePassword(old_password, user.hashPassword)
@@ -59,16 +62,18 @@ api.put('/user/:userId', CheckAccessToken, async (req, res) => {
             const new_hashPassword = await HashPassword(password)
             user['hashPassword'] = new_hashPassword ?? user['hashPassword']
         }
-        const listField = ['name']
+
+        const listField = ['firstName' ,'lastName', 'gender', 'phone']
         listField.forEach((field) => {
-            user[field] = args[field] ?? user[field]
+            user[field] = args.user[field] ?? user[field]
         })
+        console.log(user)
         const status = await user.save()
         return res.json(status)
 
     } catch (err) {
         console.log(err)
-        res.json(err.message)
+        res.json(err.message) 
     }
 })
 
