@@ -194,11 +194,11 @@ export default function ProfilePage() {
                                                         </Alert>}
                                                     </Modal.Body>
                                                     <Modal.Footer>
+                                                    <Button variant="success" onClick={handleExport}>
+                                                        Export
+                                                    </Button>
                                                     <Button variant="secondary" onClick={handleClose}>
                                                         Close
-                                                    </Button>
-                                                    <Button variant="primary" onClick={handleExport}>
-                                                        Export
                                                     </Button>
                                                     </Modal.Footer>
                                                 </Modal>
@@ -220,7 +220,7 @@ export default function ProfilePage() {
                                     </Form>
                                     <div className='user-button-list'>
                                         <Button className="mr-3" variant="success" onClick={update}>Save</Button>
-                                        <Button className="mr-3" variant="danger" onClick={reset}>Cancel</Button>{' '}
+                                        <Button className="mr-3" variant="secondary" onClick={reset}>Reset</Button>{' '}
                                     </div>
                                 </Col>
                             </Row>
